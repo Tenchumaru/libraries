@@ -127,10 +127,9 @@ namespace Adrezdi.Windows.Tests
 		{
 			// Arrange
 			var programName = System.IO.Path.GetFileName(Environment.GetCommandLineArgs()[0]);
-			string expected = @"usage:  {0} [-f] [-v[:value]] -r:value [-o:value] one two three
+			string expected = @"usage:  {0} [-f] -r:value [-o:value] one two three
 
 -f,--flag        this is a flag
--v,--value       this is a flag value
 -r,--required    this is required
 -o,--optional    this is optional
 ";
@@ -156,8 +155,6 @@ namespace Adrezdi.Windows.Tests
 	{
 		[CommandLine.FlagArgument(LongName = "flag", ShortName = 'f', Usage = "this is a flag")]
 		public bool Flag { get; set; }
-		[CommandLine.FlagValueArgument(LongName = "value", ShortName = 'v', Usage = "this is a flag value")]
-		public string FlagValue { get; set; }
 		[CommandLine.RequiredValueArgument(LongName = "required", ShortName = 'r', Usage = "this is required")]
 		public string RequiredValue { get; set; }
 		[CommandLine.OptionalValueArgument(LongName = "optional", ShortName = 'o', Usage = "this is optional")]

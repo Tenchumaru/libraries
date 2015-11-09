@@ -114,59 +114,5 @@ namespace Adrezdi.Windows.Tests
 		{
 			base.OptionalValuePropertyHasNoMatchingArgument();
 		}
-
-		[TestMethod]
-		public void IntFlagValuePropertyHasLongNameArgumentWithValue()
-		{
-			base.FlagValuePropertyHasLongNameArgumentWithValue(value);
-		}
-
-		[TestMethod, ExpectedException(typeof(CommandLineException))]
-		public void IntFlagValuePropertyHasLongNameArgumentWithInvalidValue()
-		{
-			base.FlagValuePropertyHasLongNameArgumentWithInvalidValue();
-		}
-
-		[TestMethod]
-		public void IntFlagValuePropertyHasShortNameArgumentWithValue()
-		{
-			base.FlagValuePropertyHasShortNameArgumentWithValue(value);
-		}
-
-		[TestMethod, ExpectedException(typeof(CommandLineException))]
-		public void IntFlagValuePropertyHasShortNameArgumentWithInvalidValue()
-		{
-			base.FlagValuePropertyHasShortNameArgumentWithInvalidValue();
-		}
-
-		[TestMethod, ExpectedException(typeof(CommandLineException))]
-		public void IntFlagValuePropertyHasLongNameArgumentWithEmptyValue()
-		{
-			base.FlagValuePropertyHasLongNameArgumentWithEmptyValue();
-		}
-
-		[TestMethod, ExpectedException(typeof(CommandLineException))]
-		public void IntFlagValuePropertyHasShortNameArgumentWithEmptyValue()
-		{
-			base.FlagValuePropertyHasShortNameArgumentWithEmptyValue();
-		}
-
-		[TestMethod]
-		public void IntFlagValuePropertyHasLongNameArgumentWithNoValue()
-		{
-			base.FlagValuePropertyHasLongNameArgumentWithNoValue();
-		}
-
-		[TestMethod]
-		public void IntFlagValuePropertyHasShortNameArgumentWithNoValue()
-		{
-			base.FlagValuePropertyHasShortNameArgumentWithNoValue();
-		}
-
-		[TestMethod]
-		public void IntFlagValuePropertyHasNoMatchingArgument()
-		{
-			base.FlagValuePropertyHasNoMatchingArgument();
-		}
 	}
 }

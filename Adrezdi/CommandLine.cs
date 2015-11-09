@@ -59,23 +59,6 @@ namespace Adrezdi
 		}
 
 		/// <summary>
-		/// The option need not appear on the command line and, if it does,
-		/// need not have a value.
-		/// </summary>
-		public class FlagValueArgumentAttribute : ArgumentAttribute
-		{
-			internal override bool IsValid(IEnumerable<string> args)
-			{
-				return true;
-			}
-
-			internal override string CommandLine
-			{
-				get { return "[-" + ShortName + "[:value]]"; }
-			}
-		}
-
-		/// <summary>
 		/// The option need not appear on the command line but, if it does, it
 		/// must have a value.
 		/// </summary>

@@ -91,47 +91,5 @@ namespace Adrezdi.Windows.Tests
 		{
 			base.OptionalValuePropertyHasNoMatchingArgument();
 		}
-
-		[TestMethod]
-		public void StringArrayFlagValuePropertyHasLongNameArgumentWithValue()
-		{
-			base.FlagValuePropertyHasLongNameArgumentWithValue(value);
-		}
-
-		[TestMethod]
-		public void StringArrayFlagValuePropertyHasShortNameArgumentWithValue()
-		{
-			base.FlagValuePropertyHasShortNameArgumentWithValue(value);
-		}
-
-		[TestMethod]
-		public void StringArrayFlagValuePropertyHasLongNameArgumentWithEmptyValue()
-		{
-			base.FlagValuePropertyHasLongNameArgumentWithEmptyValue();
-		}
-
-		[TestMethod]
-		public void StringArrayFlagValuePropertyHasShortNameArgumentWithEmptyValue()
-		{
-			base.FlagValuePropertyHasShortNameArgumentWithEmptyValue();
-		}
-
-		[TestMethod]
-		public void StringArrayFlagValuePropertyHasLongNameArgumentWithNoValue()
-		{
-			base.FlagValuePropertyHasLongNameArgumentWithNoValue();
-		}
-
-		[TestMethod]
-		public void StringArrayFlagValuePropertyHasShortNameArgumentWithNoValue()
-		{
-			base.FlagValuePropertyHasShortNameArgumentWithNoValue();
-		}
-
-		[TestMethod]
-		public void StringArrayFlagValuePropertyHasNoMatchingArgument()
-		{
-			base.FlagValuePropertyHasNoMatchingArgument();
-		}
 	}
 }
