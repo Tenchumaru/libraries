@@ -100,6 +100,18 @@ namespace Adrezdi
         {
             var t = new T();
 
+            // Check for the help option.
+            if(args.Any(s => s == "-h" || s == "--help"))
+            {
+                var usage = Usage<T>();
+                if(automatingUsage)
+                {
+                    Console.WriteLine(usage);
+                    Environment.Exit(2);
+                }
+                throw new CommandLineException(usage);
+            }
+
             // TODO:  support separating an option from its value.
             Func<int, bool> AcceptsNext = i => i + 1 < args.Length && args[i].StartsWith("-");
             Func<int, bool> IsRetained = i => i < 1 || !AcceptsNext(i - 1);
