@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Adrezdi
@@ -28,17 +29,12 @@ namespace Adrezdi
             }
 
             /// <summary>
-            /// Checks if the arguments on the command line satisfy this attribute.
-            /// </summary>
-            /// <param name="args">The values of the argument or null if there are no arguments.</param>
-            /// <returns></returns>
-            internal abstract bool IsValid(IEnumerable<string> args);
-
-            /// <summary>
             /// Gets the display value of how to use this argument on the
             /// command line.
             /// </summary>
             internal abstract string CommandLine { get; }
+
+            internal abstract bool WantsValue { get; }
         }
 
         /// <summary>
@@ -47,14 +43,14 @@ namespace Adrezdi
         /// </summary>
         public class FlagArgumentAttribute : ArgumentAttribute
         {
-            internal override bool IsValid(IEnumerable<string> args)
-            {
-                return args == null || args.First() == null;
-            }
-
             internal override string CommandLine
             {
                 get { return "[-" + ShortName + ']'; }
+            }
+
+            internal override bool WantsValue
+            {
+                get { return false; }
             }
         }
 
@@ -64,14 +60,14 @@ namespace Adrezdi
         /// </summary>
         public class OptionalValueArgumentAttribute : ArgumentAttribute
         {
-            internal override bool IsValid(IEnumerable<string> args)
-            {
-                return args == null || args.First() != null;
-            }
-
             internal override string CommandLine
             {
-                get { return "[-" + ShortName + ":value]"; }
+                get { return "[-" + ShortName + " value]"; }
+            }
+
+            internal override bool WantsValue
+            {
+                get { return true; }
             }
         }
 
@@ -80,21 +76,21 @@ namespace Adrezdi
         /// </summary>
         public class RequiredValueArgumentAttribute : ArgumentAttribute
         {
-            internal override bool IsValid(IEnumerable<string> args)
-            {
-                return args != null && args.First() != null;
-            }
-
             internal override string CommandLine
             {
-                get { return "-" + ShortName + ":value"; }
+                get { return "-" + ShortName + " value"; }
+            }
+
+            internal override bool WantsValue
+            {
+                get { return true; }
             }
         }
 
         public IEnumerable<string> ExtraArguments { get { return extraArguments; } }
-        private List<string> extraArguments;
+        private List<string> extraArguments = new List<string>();
         public IEnumerable<string> ExtraOptions { get { return extraOptions; } }
-        private List<string> extraOptions;
+        private List<string> extraOptions = new List<string>();
 
         public T Parse<T>(string[] args, bool automatingUsage) where T : new()
         {
@@ -112,64 +108,83 @@ namespace Adrezdi
                 throw new CommandLineException(usage);
             }
 
-            // TODO:  support separating an option from its value.
-            Func<int, bool> AcceptsNext = i => i + 1 < args.Length && args[i].StartsWith("-");
-            Func<int, bool> IsRetained = i => i < 1 || !AcceptsNext(i - 1);
-            var q = from i in args.Select((s, i) => i)
-                    let b = IsRetained(i)
-                    where b
-                    select AcceptsNext(i) ? string.Format("{0}:{1}", args[i], args[i + 1]) : args[i];
-            q = q.ToList();
+            // Collect the argument attributes with their properties of the type.
+            var q = from p in typeof(T).GetProperties()
+                    from a in p.GetCustomAttributes(typeof(ArgumentAttribute), true).Cast<ArgumentAttribute>()
+                    from k in new[] { a.LongName, a.ShortName.ToString() }
+                    select new { Key = k, Property = p, Attribute = a };
+            var pairs = q.ToDictionary(a => a.Key, a => new { a.Property, a.Attribute });
 
-            // Compose all arguments in a convenient format.
-            var cargs = from s in args
-                        let o = s.Length > 1 && "-/".IndexOf(s[0]) >= 0
-                        let p = s.Split(new[] { ':' }, 2)
-                        let n = o ? p[0] : null
-                        let v = o ? p.Length > 1 ? p[1] : null : s
-                        select new { IsOption = o, Name = n, Value = v, Argument = s };
-            cargs = cargs.ToList();
+            // Collect required argument attributes.
+            var required = new HashSet<RequiredValueArgumentAttribute>(pairs.Select(a => a.Value.Attribute).OfType<RequiredValueArgumentAttribute>());
 
-            // Match properties with their arguments.
-            var matchings = from p in typeof(T).GetProperties()
-                            from a in p.GetCustomAttributes(typeof(ArgumentAttribute), true).Cast<ArgumentAttribute>()
-                            let v = from c in cargs
-                                    where c.IsOption && a.Matches(c.Name)
-                                    select c
-                            select new { Property = p, Attribute = a, Arguments = v };
-            matchings = matchings.ToList();
+            // Collect only the options from the command line.
+            var invalid = new List<ArgumentAttribute>();
+            for(int i = 0, n = args.Length; i < n; ++i)
+            {
+                var arg = args[i];
+                if(arg == "--")
+                {
+                    extraArguments.AddRange(args.Skip(i + 1).ToList());
+                    break;
+                }
+                if(arg.StartsWith("--"))
+                {
+                    // Check for a long name option.
+                    var parts = arg.Substring(2).Split('=');
+                    var name = parts[0];
+                    if(pairs.ContainsKey(name))
+                    {
+                        required.RemoveWhere(a => a.LongName == name);
+                        var pair = pairs[name];
+                        if(pair.Attribute.WantsValue && parts.Length >= 2)
+                        {
+                            var value = String.Join("=", parts.Skip(1));
+                            SetPropertyValue(t, pair.Property, value);
+                        }
+                        else if(!pair.Attribute.WantsValue && parts.Length == 1)
+                            SetPropertyValue(t, pair.Property, true);
+                        else
+                            invalid.Add(pair.Attribute);
+                    }
+                    else
+                        extraOptions.Add(arg);
+                }
+                else if(arg.StartsWith("-"))
+                {
+                    // Check for a short name option.
+                    var name = arg.Substring(1);
+                    if(pairs.ContainsKey(name))
+                    {
+                        required.RemoveWhere(a => a.ShortName == name[0]);
+                        var pair = pairs[name];
+                        if(pair.Attribute.WantsValue && i + 1 < args.Length)
+                        {
+                            var value = args[++i];
+                            SetPropertyValue(t, pair.Property, value);
+                        }
+                        else if(!pair.Attribute.WantsValue)
+                            SetPropertyValue(t, pair.Property, true);
+                        else
+                            invalid.Add(pair.Attribute);
+                    }
+                    else
+                        extraOptions.Add(arg);
+                }
+                else
+                    extraArguments.Add(arg);
+            }
 
-            // Extract those with invalid specifications.
-            // TODO:  consider allowing multiple flag (and possibly other) options.
-            var invalid = matchings.Where(i => i.Arguments.Skip(1).Any() || !i.Attribute.IsValid(i.Arguments.Any() ? i.Arguments.Select(a => a.Value) : null)).ToList();
-            if(invalid.Count > 0)
+            // Check for invalid options.
+            if(invalid.Count > 0 || required.Count > 0)
             {
                 if(automatingUsage)
                 {
                     Console.WriteLine(Usage<T>());
                     Environment.Exit(2);
                 }
-                throw new CommandLineException(invalid.Select(a => a.Attribute));
+                throw new CommandLineException(invalid.Concat(required));
             }
-
-            // Set those properties' values.
-            foreach(var m in matchings.Where(i => i.Arguments.Any()))
-                SetPropertyValue(t, m.Property, m.Attribute is FlagArgumentAttribute ? (object)true : m.Arguments.First().Value); // TODO:  refactor as a virtual method.
-
-            // Put all other arguments into the "extra arguments" property.
-            var xargs = from v in cargs
-                        where !v.IsOption
-                        select v.Value;
-            extraArguments = new List<string>(xargs);
-
-            // Put unmatched options into the "extra options" property.
-            var xopts = from c in cargs
-                        where c.IsOption
-                        join b in
-                            from m in matchings from a in m.Arguments select a on c equals b into j
-                        where !j.Any()
-                        select c.Argument;
-            extraOptions = new List<string>(xopts);
 
             return t;
         }
@@ -194,7 +209,7 @@ namespace Adrezdi
             return sb.ToString();
         }
 
-        private static void SetPropertyValue(object obj, System.Reflection.PropertyInfo property, object value)
+        private static void SetPropertyValue(object obj, PropertyInfo property, object value)
         {
             try
             {

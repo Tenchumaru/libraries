@@ -11,7 +11,7 @@ namespace Adrezdi.Windows.Tests
 		protected void RequiredValuePropertyHasLongNameArgumentWithRequiredValue(T value)
 		{
 			// Arrange
-			var args = new string[] { "--required:" + value };
+			var args = new string[] { "--required=" + value };
 			var x = new CommandLine();
 
 			// Act
@@ -24,7 +24,7 @@ namespace Adrezdi.Windows.Tests
 		protected void RequiredValuePropertyHasLongNameArgumentWithInvalidValue()
 		{
 			// Arrange
-			var args = new string[] { "--required:value" };
+			var args = new string[] { "--required=value" };
 			var x = new CommandLine();
 
 			// Act
@@ -37,7 +37,7 @@ namespace Adrezdi.Windows.Tests
 		protected void RequiredValuePropertyHasShortNameArgumentWithRequiredValue(T value)
 		{
 			// Arrange
-			var args = new string[] { "-r:" + value };
+			var args = new string[] { "-r", value.ToString() };
 			var x = new CommandLine();
 
 			// Act
@@ -50,7 +50,7 @@ namespace Adrezdi.Windows.Tests
 		protected void RequiredValuePropertyHasShortNameArgumentWithInvalidValue()
 		{
 			// Arrange
-			var args = new string[] { "--r:value" };
+			var args = new string[] { "-r", "value" };
 			var x = new CommandLine();
 
 			// Act
@@ -63,7 +63,7 @@ namespace Adrezdi.Windows.Tests
 		protected void RequiredValuePropertyHasLongNameArgumentWithEmptyValue()
 		{
 			// Arrange
-			var args = new string[] { "--required:" };
+			var args = new string[] { "--required=" };
 			var x = new CommandLine();
 
 			// Act
@@ -76,7 +76,7 @@ namespace Adrezdi.Windows.Tests
 		protected void RequiredValuePropertyHasShortNameArgumentWithEmptyValue()
 		{
 			// Arrange
-			var args = new string[] { "-r:" };
+			var args = new string[] { "-r", "" };
 			var x = new CommandLine();
 
 			// Act
@@ -128,7 +128,7 @@ namespace Adrezdi.Windows.Tests
 		protected void OptionalValuePropertyHasLongNameArgumentWithValue(T value)
 		{
 			// Arrange
-			var args = new string[] { "--optional:" + value };
+			var args = new string[] { "--optional=" + value };
 			var x = new CommandLine();
 
 			// Act
@@ -141,7 +141,7 @@ namespace Adrezdi.Windows.Tests
 		protected void OptionalValuePropertyHasLongNameArgumentWithInvalidValue()
 		{
 			// Arrange
-			var args = new string[] { "--optional:value" };
+			var args = new string[] { "--optional=value" };
 			var x = new CommandLine();
 
 			// Act
@@ -154,7 +154,7 @@ namespace Adrezdi.Windows.Tests
 		protected void OptionalValuePropertyHasShortNameArgumentWithValue(T value)
 		{
 			// Arrange
-			var args = new string[] { "-o:" + value };
+			var args = new string[] { "-o", value.ToString() };
 			var x = new CommandLine();
 
 			// Act
@@ -167,7 +167,7 @@ namespace Adrezdi.Windows.Tests
 		protected void OptionalValuePropertyHasShortNameArgumentWithInvalidValue()
 		{
 			// Arrange
-			var args = new string[] { "-o:value" };
+			var args = new string[] { "-o", "value" };
 			var x = new CommandLine();
 
 			// Act
@@ -180,7 +180,7 @@ namespace Adrezdi.Windows.Tests
 		protected void OptionalValuePropertyHasLongNameArgumentWithEmptyValue()
 		{
 			// Arrange
-			var args = new string[] { "--optional:" };
+			var args = new string[] { "--optional=" };
 			var x = new CommandLine();
 
 			// Act
@@ -193,7 +193,7 @@ namespace Adrezdi.Windows.Tests
 		protected void OptionalValuePropertyHasShortNameArgumentWithEmptyValue()
 		{
 			// Arrange
-			var args = new string[] { "-o:" };
+			var args = new string[] { "-o", "" };
 			var x = new CommandLine();
 
 			// Act

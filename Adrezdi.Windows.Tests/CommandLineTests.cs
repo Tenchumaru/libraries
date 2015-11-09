@@ -11,7 +11,7 @@ namespace Adrezdi.Windows.Tests
 		public void FlagPropertyHasLongNameArgumentWithValue()
 		{
 			// Arrange
-			var args = new string[] { "--flag:value" };
+			var args = new string[] { "--flag=value" };
 			var x = new CommandLine();
 
 			// Act
@@ -20,24 +20,25 @@ namespace Adrezdi.Windows.Tests
 			// Assert
 		}
 
-		[TestMethod, ExpectedException(typeof(CommandLineException))]
+		[TestMethod]
 		public void FlagPropertyHasShortNameArgumentWithValue()
 		{
 			// Arrange
-			var args = new string[] { "-f:value" };
+			var args = new string[] { "-f", "value" };
 			var x = new CommandLine();
 
 			// Act
 			var result = x.Parse<FlagCommandLineTest>(args, automatingUsage: false);
 
 			// Assert
+			Assert.IsTrue(result.FlagValue);
 		}
 
 		[TestMethod, ExpectedException(typeof(CommandLineException))]
 		public void FlagPropertyHasLongNameArgumentWithEmptyValue()
 		{
 			// Arrange
-			var args = new string[] { "--flag:" };
+			var args = new string[] { "--flag=" };
 			var x = new CommandLine();
 
 			// Act
@@ -46,17 +47,18 @@ namespace Adrezdi.Windows.Tests
 			// Assert
 		}
 
-		[TestMethod, ExpectedException(typeof(CommandLineException))]
+		[TestMethod]
 		public void FlagPropertyHasShortNameArgumentWithEmptyValue()
 		{
 			// Arrange
-			var args = new string[] { "-f:" };
+			var args = new string[] { "-f", "" };
 			var x = new CommandLine();
 
 			// Act
 			var result = x.Parse<FlagCommandLineTest>(args, automatingUsage: false);
 
 			// Assert
+			Assert.IsTrue(result.FlagValue);
 		}
 
 		[TestMethod]
@@ -127,7 +129,7 @@ namespace Adrezdi.Windows.Tests
 		{
 			// Arrange
 			var programName = System.IO.Path.GetFileName(Environment.GetCommandLineArgs()[0]);
-			string expected = @"usage:  {0} [-f] -r:value [-o:value] one two three
+			string expected = @"usage:  {0} [-f] -r value [-o value] one two three
 
 -f,--flag        this is a flag
 -r,--required    this is required
