@@ -8,6 +8,21 @@ namespace Adrezdi
 {
     public class CommandLine
     {
+        [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+        public class UsageAttribute : Attribute
+        {
+            public string Prolog { get; set; }
+            public string Epilog { get; set; }
+
+            public UsageAttribute() { }
+
+            public UsageAttribute(string prolog, string epilog)
+            {
+                Prolog = prolog;
+                Epilog = epilog;
+            }
+        }
+
         [AttributeUsage(AttributeTargets.Property)]
         public abstract class ArgumentAttribute : Attribute
         {
@@ -102,7 +117,7 @@ namespace Adrezdi
                 var usage = Usage<T>();
                 if(automatingUsage)
                 {
-                    Console.WriteLine(usage);
+                    Console.Write(usage);
                     Environment.Exit(2);
                 }
                 throw new CommandLineException(usage);
@@ -180,7 +195,7 @@ namespace Adrezdi
             {
                 if(automatingUsage)
                 {
-                    Console.WriteLine(Usage<T>());
+                    Console.Write(Usage<T>());
                     Environment.Exit(2);
                 }
                 throw new CommandLineException(invalid.Concat(required));
@@ -191,7 +206,11 @@ namespace Adrezdi
 
         public string Usage<T>(params string[] additionalArguments)
         {
-            var sb = new StringBuilder("usage:  ");
+            var sb = new StringBuilder();
+            var usageAttribute = typeof(T).GetCustomAttribute<UsageAttribute>();
+            if(usageAttribute != null && !String.IsNullOrWhiteSpace(usageAttribute.Prolog))
+                sb.AppendFormat("{1}{0}{0}", Environment.NewLine, usageAttribute.Prolog);
+            sb.Append("usage:  ");
             sb.Append(System.IO.Path.GetFileName(Environment.GetCommandLineArgs()[0]));
             var q = from p in typeof(T).GetProperties()
                     from a in p.GetCustomAttributes(typeof(ArgumentAttribute), true)
@@ -206,6 +225,9 @@ namespace Adrezdi
             var format = string.Format("-{{0}},--{0}1,-{1}{2}{{2}}{3}", '{', longestOption + 4, '}', Environment.NewLine);
             foreach(var attribute in q)
                 sb.AppendFormat(format, attribute.ShortName, attribute.LongName, attribute.Usage);
+            var epilogAttribute = typeof(T).GetCustomAttribute<UsageAttribute>();
+            if(usageAttribute != null && !String.IsNullOrWhiteSpace(usageAttribute.Epilog))
+                sb.AppendFormat("{0}{1}{0}", Environment.NewLine, usageAttribute.Epilog);
             return sb.ToString();
         }
 
